@@ -1,0 +1,24 @@
+{
+    "name": "hanoivip/quest",
+    "description": "User quest mod",
+    "type": "library",
+    "license": "MIT",
+    "autoload" : {
+		"psr-4" : {
+			"Hanoivip\\Quest\\" : "src/"
+		}
+	},
+	"require" : {
+		"php" : ">=7.0.0",
+		"laravel/framework" : ">=5.5",
+		"hanoivip/events" : "dev-master"
+	},
+	"extra" : {
+		"laravel" : {
+			"providers" : [
+				"Hanoivip\\Quest\\ModServiceProvider",
+				"Hanoivip\\Quest\\EventServiceProvider"
+			]
+		}
+	}
+}
