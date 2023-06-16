@@ -4,6 +4,6 @@ namespace Hanoivip\Quest\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Job extends Model
+class DailyTask extends Model
 {
 }

@@ -9,10 +9,10 @@
 @section('content')
 
 <p>Tasks</p>
-@include('hanoivip::tasks-partial', ['tasks' => $tasks, 'finished' => $finished])
+@include('hanoivip::tasks-partial', ['tasks' => $tasks, 'reward_tasks' => $reward_tasks])
 
 <p>Job - Daily tasks</p>
-@include('hanoivip::jobs-partial', ['jobs' => $jobs, 'finished' => $finished])
+@include('hanoivip::jobs-partial', ['jobs' => $jobs, 'job_rewards' => $job_rewards])
 
 
 @endsection

@@ -3,6 +3,7 @@
 namespace Hanoivip\Quest\Services;
 
 use Hanoivip\Quest\Models\UserQuest;
+use Exception;
 
 class QuestService
 {
@@ -20,7 +21,10 @@ class QuestService
      */
     private function getDoingTasks($userId)
     {
-        
+        return UserQuest::where('user_id', $userId)
+        ->where('line', '>', 0)
+        ->pluck('line')// nho long
+        ->toArray();
     }
     
     /**
@@ -30,7 +34,10 @@ class QuestService
      */
     private function getDoingJobs($userId)
     {
-        
+        return UserQuest::where('user_id', $userId)
+        ->where('line', 0)
+        ->pluck('line')// nho long
+        ->toArray();
     }
     private function canAccept($userId, $quest)
     {
@@ -67,17 +74,25 @@ class QuestService
         $data = $this->static->getTasks();
         if (!empty($data))
         {
+            $newQuest = [];
             foreach ($data as $lineId => $cfg)
             {
                 if (!in_array($lineId, $doings))
                 {
-                    // check first task
-                    if ($this->canAccept($userId, $cfg[1]))
+                    // find first task in line?
+                    $first = $cfg[1];
+                    if ($this->canAccept($userId, $first))
                     {
-                        // add to database..
+                        $newQuest[] = [
+                            'user_id' => $userId,
+                            'line_id' => $first->line,
+                            'task_id' => $first->id,
+                        ];
                     }
                 }
             }
+            // add in batch
+            UserQuest::insert($newQuest);
         }
         // return all records
         $records = UserQuest::where('user_id', $userId)
@@ -96,16 +111,23 @@ class QuestService
         $data = $this->static->getJobs();
         if (!empty($data))
         {
+            $newQuest = [];
             foreach ($data as $jid => $cfg)
             {
                 if (!in_array($jid, $doings))
                 {
                     if ($this->canAccept($userId, $cfg))
                     {
-                        // add to database..
+                        $newQuest[] = [
+                            'user_id' => $userId,
+                            'line_id' => 0,
+                            'task_id' => $cfg->id,
+                        ];
                     }
                 }
             }
+            // add in batch
+            UserQuest::insert($newQuest);
         }
         // return all records
         $records = UserQuest::where('user_id', $userId)
@@ -113,12 +135,31 @@ class QuestService
         ->get();
         return $records;
     }
-    
-    public function getFinished($userId) 
+    /**
+     * 
+     * @param number $userId
+     * @param UserQuest $quest
+     */
+    public function canFinished($userId, $quest) 
     {
+        $cfg = null;
+        if ($quest->line_id == 0)
+        {
+            $cfg = $this->static->getJobs($quest->task_id);
+        }
+        else 
+        {
+            $cfg = $this->static->getTasks($quest->line_id, $quest->task_id);
+        }
+        if (empty($cfg))
+        {
+            throw new Exception("Quest quest is bogus");
+        }
+        $target = 0;
+        return $quest->target >= $target;
     }
     
-    public function getReward($userId, $tid)
+    public function getReward($userId, $line, $qid)
     {
         
     }
