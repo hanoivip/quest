@@ -3,6 +3,9 @@
 namespace Hanoivip\Quest;
 
 use Illuminate\Support\ServiceProvider;
+use Hanoivip\Quest\Services\ConfigStatic;
+use Hanoivip\Quest\Services\IQuestStatic;
+use Hanoivip\Quest\Services\DatabaseStatic;
 
 class ModServiceProvider extends ServiceProvider
 {
@@ -13,7 +16,7 @@ class ModServiceProvider extends ServiceProvider
             __DIR__.'/../resources/langs' => resource_path('lang/vendor/hanoivip'),
             __DIR__.'/../resources/images' => public_path('images'),
         ]);
-        $this->loadMigrationsFrom(__DIR__ . '/..migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../migrations');
         $this->loadViewsFrom(__DIR__ . '/../views', 'hanoivip');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
@@ -23,6 +26,14 @@ class ModServiceProvider extends ServiceProvider
 
     public function register()
     {
-        //$this->app->bind('vip', VipService::class);
+        $static = config('quest.static', 'file');
+        if ($static == 'file')
+        {
+            $this->app->bind(IQuestStatic::class, ConfigStatic::class);
+        }
+        else
+        {
+            $this->app->bind(IQuestStatic::class, DatabaseStatic::class);
+        }
     }
 }

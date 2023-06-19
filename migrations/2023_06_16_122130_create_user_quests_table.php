@@ -14,7 +14,7 @@ class CreateUserQuestsTable extends Migration
             $table->integer('line_id');
             $table->integer('task_id')->comment('Task Id or Job Id');
             $table->integer('target');
-            $table->tinyInteger('status');
+            $table->tinyInteger('status')->nullable();
             $table->timestamp('rewarded_at')->nullable();
             $table->timestamps();
         });

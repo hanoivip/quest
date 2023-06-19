@@ -19,6 +19,7 @@ class CreateTasksTable extends Migration
             $table->string('triggers')->nullable();
             $table->string('rewards')->nullable();
             $table->string('detail');
+			$table->string('guide')->nullable();
             $table->string('progress_type');
             $table->string('progress_ids')->nullable();
             $table->timestamps();

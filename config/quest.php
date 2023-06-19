@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'static' => 'json', //database, file, 
+    'static' => 'file', //database, file, 
 ];

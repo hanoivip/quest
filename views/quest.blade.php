@@ -12,7 +12,7 @@
 @include('hanoivip::tasks-partial', ['tasks' => $tasks, 'reward_tasks' => $reward_tasks])
 
 <p>Job - Daily tasks</p>
-@include('hanoivip::jobs-partial', ['jobs' => $jobs, 'job_rewards' => $job_rewards])
+@include('hanoivip::jobs-partial', ['jobs' => $jobs, 'reward_jobs' => $reward_jobs])
 
 
 @endsection

@@ -3,10 +3,15 @@
 namespace Hanoivip\Quest\Services;
 
 use Hanoivip\Quest\Models\UserQuest;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Exception;
 
 class QuestService
 {
+    const QUEST_WORKING = 0;
+    const QUEST_FINISHED = 1;
+    
     private $static;
     
     public function __construct(IQuestStatic $static)
@@ -22,8 +27,8 @@ class QuestService
     private function getDoingTasks($userId)
     {
         return UserQuest::where('user_id', $userId)
-        ->where('line', '>', 0)
-        ->pluck('line')// nho long
+        ->where('line_id', '>', 0)
+        ->pluck('line_id')// nho long
         ->toArray();
     }
     
@@ -35,8 +40,8 @@ class QuestService
     private function getDoingJobs($userId)
     {
         return UserQuest::where('user_id', $userId)
-        ->where('line', 0)
-        ->pluck('line')// nho long
+        ->where('line_id', 0)
+        ->pluck('line_id')// nho long
         ->toArray();
     }
     private function canAccept($userId, $quest)
@@ -51,12 +56,10 @@ class QuestService
                 {
                     $type = $data[$tid]->type;
                     $condition = $data[$tid]->condition;
-                    switch ($type)
+                    $clazz = app()->make($type);
+                    if (!$clazz->check($userId, $condition))
                     {
-                        case "VIPLevel":
-                        case "Recharge":
-                        case "Login":
-                            break;
+                        return false;
                     }
                 }
             }
@@ -129,6 +132,7 @@ class QuestService
             // add in batch
             UserQuest::insert($newQuest);
         }
+        // TODO: reset job?
         // return all records
         $records = UserQuest::where('user_id', $userId)
         ->where('line_id', 0)
@@ -159,9 +163,32 @@ class QuestService
         return $quest->target >= $target;
     }
     
-    public function getReward($userId, $line, $qid)
+    public function getReward($userId, $line, $tid)
     {
-        
+        $record = UserQuest::where('user_id', $userId)
+        ->where('line_id', $line)
+        ->where('task_id', $tid)
+        ->first();
+        if (empty($record))
+        {
+            Log::error("Quest task not taken $line $tid");
+            return false;
+        }
+        if ($record->status == self::QUEST_FINISHED)
+        {
+            Log::error("Quest task is finished $line $tid");
+            return false;
+        }
+        if (!$this->canFinished($userId, $record))
+        {
+            Log::error("Quest task is not finished $line $tid");
+            return false;
+        }
+        // send reward..
+        $record->rewarded_at = Carbon::now()->timestamp;
+        $record->status = self::QUEST_FINISHED;
+        $record->save();
+        // trigger next?
+        return true;
     }
-    
 }
