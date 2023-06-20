@@ -26,7 +26,8 @@ class ModServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $static = config('quest.static', 'file');
+        $static = config('quest.static', 'database');
+        
         if ($static == 'file')
         {
             $this->app->bind(IQuestStatic::class, ConfigStatic::class);

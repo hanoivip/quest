@@ -7,6 +7,7 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Hanoivip\Quest\Services\IQuestStatic;
 
 /**
  * Task = main quest
@@ -19,9 +20,12 @@ class Quest extends BaseController
     
     private $service;
     
-    public function __construct(QuestService $service)
+    private $static;
+    
+    public function __construct(QuestService $service, IQuestStatic $static)
     {
         $this->service = $service;
+        $this->static = $static;
     }
     
     public function index()
@@ -39,6 +43,7 @@ class Quest extends BaseController
                 }
             }
         }
+        $staticTasks = $this->static->getTasks();
         $jobs = $this->service->getJobs($userId);
         $jobRewards = [];
         if (!empty($jobs))
@@ -52,7 +57,7 @@ class Quest extends BaseController
             }
         }
         return view('hanoivip::quest', [
-            'tasks' => $tasks, 'reward_tasks' => $rewardTasks,
+            'tasks' => $tasks, 'reward_tasks' => $rewardTasks, 'static_tasks' => $staticTasks,
             'jobs' => $jobs, 'reward_jobs' => $jobRewards,
         ]);
     }

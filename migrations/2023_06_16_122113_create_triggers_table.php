@@ -6,24 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateTriggersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('triggers', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->integer('id');
+            $table->string('type');
+            $table->string('condition');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('triggers');

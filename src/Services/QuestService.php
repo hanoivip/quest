@@ -2,6 +2,7 @@
 
 namespace Hanoivip\Quest\Services;
 
+use Hanoivip\Quest\Models\Task;
 use Hanoivip\Quest\Models\UserQuest;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -44,10 +45,18 @@ class QuestService
         ->pluck('line_id')// nho long
         ->toArray();
     }
+    /**
+     * 
+     * @param number $userId
+     * @param Task $quest
+     * @return boolean
+     */
     private function canAccept($userId, $quest)
     {
         $data = $this->static->getTriggers();
         $triggers = $quest->triggers;
+        //TODO: cast column not works?
+        $triggers = json_decode($triggers, true);
         if (!empty($triggers))
         {
             foreach ($triggers as $tid)
@@ -56,11 +65,19 @@ class QuestService
                 {
                     $type = $data[$tid]->type;
                     $condition = $data[$tid]->condition;
-                    $clazz = app()->make($type);
-                    if (!$clazz->check($userId, $condition))
+                    try {
+                        $clazz = app()->make($type);
+                        if (!$clazz->check($userId, $condition))
+                        {
+                            return false;
+                        }
+                    } 
+                    catch (Exception $ex) 
                     {
+                        Log::error("Quest check trigger exception: " . $ex->getMessage());
                         return false;
                     }
+                    
                 }
             }
         }
@@ -75,6 +92,7 @@ class QuestService
         $doings = $this->getDoingTasks($userId);
         // scan for acceptable tasks
         $data = $this->static->getTasks();
+        //Log::debug(print_r($data, true));
         if (!empty($data))
         {
             $newQuest = [];
@@ -83,14 +101,19 @@ class QuestService
                 if (!in_array($lineId, $doings))
                 {
                     // find first task in line?
-                    $first = $cfg[1];
+                    $ftid = min(array_keys($cfg));
+                    $first = $cfg[$ftid];
+                    //Log::debug(print_r($first, true));
                     if ($this->canAccept($userId, $first))
                     {
                         $newQuest[] = [
                             'user_id' => $userId,
                             'line_id' => $first->line,
                             'task_id' => $first->id,
+                            'target' => 0,
+                            'status' => self::QUEST_WORKING,
                         ];
+                        continue;
                     }
                 }
             }
@@ -159,7 +182,9 @@ class QuestService
         {
             throw new Exception("Quest quest is bogus");
         }
-        $target = 0;
+        $cfg = $cfg[$quest->line_id][$quest->task_id];
+        $target = $cfg->target;
+        Log::debug(print_r($cfg, true));
         return $quest->target >= $target;
     }
     

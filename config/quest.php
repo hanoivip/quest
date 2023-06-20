@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'static' => 'file', //database, file, 
+    'static' => 'database', //database, file, 
 ];
