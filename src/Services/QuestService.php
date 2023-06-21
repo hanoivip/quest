@@ -92,7 +92,7 @@ class QuestService
         $doings = $this->getDoingTasks($userId);
         // scan for acceptable tasks
         $data = $this->static->getTasks();
-        //Log::debug(print_r($data, true));
+        // Log::debug(print_r($data, true));
         if (!empty($data))
         {
             $newQuest = [];
@@ -123,6 +123,8 @@ class QuestService
         // return all records
         $records = UserQuest::where('user_id', $userId)
         ->where('line_id', '>', 0)
+        ->where('status', self::QUEST_WORKING)
+        ->orderBy('line_id')
         ->get();
         return $records;
     }
@@ -184,7 +186,7 @@ class QuestService
         }
         $cfg = $cfg[$quest->line_id][$quest->task_id];
         $target = $cfg->target;
-        Log::debug(print_r($cfg, true));
+        //Log::debug(print_r($cfg, true));
         return $quest->target >= $target;
     }
     
@@ -210,10 +212,73 @@ class QuestService
             return false;
         }
         // send reward..
-        $record->rewarded_at = Carbon::now()->timestamp;
+        $task = $this->static->getTasks($line, $tid);
+        if (empty($task))
+        {
+            throw new Exception("Quest task is bogus $line $tid");
+        }
+        $this->sendReward($userId, $task);
+        $record->rewarded_at = Carbon::now();
         $record->status = self::QUEST_FINISHED;
         $record->save();
         // trigger next?
+        $next = $this->static->getTasks($line, $tid + 1);
+        //Log::debug(print_r($next, true));
+        if (!empty($next) && $this->canAccept($userId, $next[$line][$tid+1]))
+        {
+            //$this->userAcceptTask($userId, $next[$line][$tid+1]);
+            // accept
+            $new = new UserQuest();
+            $new->user_id = $userId;
+            $new->line_id = $line;
+            $new->task_id = $tid+1;
+            $new->target = 0;
+            $new->status = self::QUEST_WORKING;
+            $new->save();
+        }
         return true;
+    }
+    
+    private function sendReward($userId, $task)
+    {
+        Log::debug("Quest send $userId rewards...");
+    }
+    
+    public function updateTaskProgress($userId, $eventType, $times = 1, $target = null)
+    {
+        $records = UserQuest::where("user_id", $userId)
+        ->where('status', self::QUEST_WORKING)
+        ->get();
+        $tasks = $this->static->getTasks();
+        if ($records->isNotEmpty())
+        {
+            foreach ($records as $record)
+            {
+                $add = false;
+                $static = $tasks[$record->line_id][$record->task_id];
+                //Log::debug(print_r($static, true));
+                //Log::debug(print_r($eventType, true));
+                if ($eventType == $static->progress_type)
+                {
+                    if (!empty($static->progress_ids))
+                    {
+                        if (!empty($target) && $static->progress_ids == $target)
+                        {
+                            $add = true;
+                        }
+                    }
+                    else
+                    {
+                        $add = true;
+                    }
+                }
+                if ($add)
+                {
+                    Log::debug(print_r($record, true));
+                    $record->target = $record->target + $times;
+                    $record->save();
+                }
+            }
+        }
     }
 }

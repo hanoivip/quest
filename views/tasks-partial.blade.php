@@ -9,7 +9,12 @@
 			<a href="{{ $static->guide }}">Thuc hien</a>
 		@else
 			<p>Da xong</p>
-			<form></form>
+			<form method="post" action="{{route('quest.reward')}}">
+				{{ csrf_field() }}
+				<input type="hidden" id="line" name="line" value="{{$task->line_id}}"/>
+				<input type="hidden" id="task" name="task" value="{{$task->task_id}}"/>
+				<button type="submit">Reward</button>
+			</form>
 		@endif
 	</div>
 @endforeach

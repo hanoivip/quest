@@ -6,6 +6,7 @@ Route::middleware([
     'auth:web'
 ])->namespace('Hanoivip\Quest\Controllers')->group(function () {
     Route::get('/quest', 'Quest@index')->name('quest');
+    Route::any('/quest/reward', 'Quest@reward')->name('quest.reward');
 });
 
 Route::middleware([

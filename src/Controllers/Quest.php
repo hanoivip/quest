@@ -1,12 +1,15 @@
 <?php
 namespace Hanoivip\Quest\Controllers;
 
+use Carbon\Exceptions\Exception;
 use Hanoivip\Quest\Services\QuestService;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Hanoivip\Quest\Services\IQuestStatic;
 
 /**
@@ -39,7 +42,7 @@ class Quest extends BaseController
             {
                 if ($this->service->canFinished($userId, $task))
                 {
-                    $rewardTasks[] = $task->line_id * 1000000 + $task->task_id;
+                    $rewardTasks[$task->line_id * 1000000 + $task->task_id] = 1;
                 }
             }
         }
@@ -52,7 +55,7 @@ class Quest extends BaseController
             {
                 if ($this->service->canFinished($userId, $job))
                 {
-                    $jobRewards[] = $task->task_id;
+                    $jobRewards[$task->task_id] = 1;
                 }
             }
         }
@@ -77,8 +80,22 @@ class Quest extends BaseController
         
     }
     
-    public function reward()
+    public function reward(Request $request)
     {
-        
+        $userId = Auth::user()->getAuthIdentifier();
+        $line = $request->input('line');
+        $tid = $request->input('task');
+        try 
+        {
+            $result = $this->service->getReward($userId, $line, $tid);
+            return view('hanoivip::quest-result', [
+                'message' => $result ? 'success' : null,
+                'error_message' => $result ? 'failure' : null,
+            ]);
+        } 
+        catch (Exception $ex) 
+        {
+            Log::error("Quest get reward exception: " . $ex->getMessage());
+        }
     }
 }
