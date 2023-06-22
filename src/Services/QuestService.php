@@ -92,7 +92,6 @@ class QuestService
         $doings = $this->getDoingTasks($userId);
         // scan for acceptable tasks
         $data = $this->static->getTasks();
-        // Log::debug(print_r($data, true));
         if (!empty($data))
         {
             $newQuest = [];
@@ -103,7 +102,6 @@ class QuestService
                     // find first task in line?
                     $ftid = min(array_keys($cfg));
                     $first = $cfg[$ftid];
-                    //Log::debug(print_r($first, true));
                     if ($this->canAccept($userId, $first))
                     {
                         $newQuest[] = [
@@ -168,6 +166,7 @@ class QuestService
      * 
      * @param number $userId
      * @param UserQuest $quest
+     * @return boolean
      */
     public function canFinished($userId, $quest) 
     {
@@ -186,7 +185,6 @@ class QuestService
         }
         $cfg = $cfg[$quest->line_id][$quest->task_id];
         $target = $cfg->target;
-        //Log::debug(print_r($cfg, true));
         return $quest->target >= $target;
     }
     
@@ -223,7 +221,6 @@ class QuestService
         $record->save();
         // trigger next?
         $next = $this->static->getTasks($line, $tid + 1);
-        //Log::debug(print_r($next, true));
         if (!empty($next) && $this->canAccept($userId, $next[$line][$tid+1]))
         {
             //$this->userAcceptTask($userId, $next[$line][$tid+1]);
@@ -256,8 +253,6 @@ class QuestService
             {
                 $add = false;
                 $static = $tasks[$record->line_id][$record->task_id];
-                //Log::debug(print_r($static, true));
-                //Log::debug(print_r($eventType, true));
                 if ($eventType == $static->progress_type)
                 {
                     if (!empty($static->progress_ids))
@@ -274,7 +269,6 @@ class QuestService
                 }
                 if ($add)
                 {
-                    Log::debug(print_r($record, true));
                     $record->target = $record->target + $times;
                     $record->save();
                 }

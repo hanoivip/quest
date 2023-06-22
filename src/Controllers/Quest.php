@@ -2,6 +2,7 @@
 namespace Hanoivip\Quest\Controllers;
 
 use Carbon\Exceptions\Exception;
+use Hanoivip\Quest\Models\UserQuest;
 use Hanoivip\Quest\Services\QuestService;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
@@ -65,9 +66,28 @@ class Quest extends BaseController
         ]);
     }
     
-    public function refreshTask()
+    public function refreshTask(Request $request)
     {
-        
+        $userId = Auth::user()->getAuthIdentifier();
+        $tasks = $this->service->getTasks($userId);
+        $rewardTasks = [];
+        if (!empty($tasks))
+        {
+            foreach ($tasks as $task)
+            {
+                if ($this->service->canFinished($userId, $task))
+                {
+                    $rewardTasks[$task->line_id * 1000000 + $task->task_id] = 1;
+                }
+            }
+        }
+        $staticTasks = $this->static->getTasks();
+        $template = 'hanoivip::tasks';
+        if ($request->has('template'))
+        {
+            $template = $request->input('template');
+        }
+        return view($template, ['tasks' => $tasks, 'reward_tasks' => $rewardTasks, 'static_tasks' => $staticTasks]);
     }
     
     public function refreshJob()
@@ -88,10 +108,22 @@ class Quest extends BaseController
         try 
         {
             $result = $this->service->getReward($userId, $line, $tid);
-            return view('hanoivip::quest-result', [
-                'message' => $result ? 'success' : null,
-                'error_message' => $result ? 'failure' : null,
-            ]);
+            if ($request->has('template'))
+            {
+                $template = $request->input('template');
+                $record = UserQuest::where('line_id', $line)->where('task_id', $tid)->first();
+                $staticTasks = $this->static->getTasks();
+                $static = $staticTasks[$line][$tid];
+                $canGet = $this->service->canFinished($userId, $record);
+                return view($template, ['task' => $record, 'static' => $static, 'can_reward' => $canGet]);
+            }
+            else
+            {
+                return view('hanoivip::quest-result', [
+                    'message' => $result ? 'success' : null,
+                    'error_message' => $result ? 'failure' : null,
+                ]);
+            }
         } 
         catch (Exception $ex) 
         {

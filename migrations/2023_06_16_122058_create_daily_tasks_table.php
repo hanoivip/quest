@@ -12,11 +12,11 @@ class CreateDailyTasksTable extends Migration
         Schema::create('daily_tasks', function (Blueprint $table) {
             $table->bigIncrements('id');
             //$table->integer('line');
-            $table->longText('triggers')->nullable();
-            $table->longText('rewards')->nullable();
+            $table->text('triggers')->nullable();
+            $table->text('rewards')->nullable();
             $table->string('detail');
             $table->string('progress_type');
-            $table->longText('progress_ids')->nullable();
+            $table->text('progress_ids')->nullable();
             $table->timestamps();
         });
     }
