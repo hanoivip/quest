@@ -1,3 +1,4 @@
+<br/>
 <p>{{ $static->detail }}</p>
 @if ($task->status == 1)
 	<p>Da hoan thanh, da nhan thuong</p>
@@ -12,6 +13,6 @@
 		<input type="hidden" id="task" name="task" value="{{$task->task_id}}"/>
 		<button type="submit">Reward</button>
 	</form> --}}
-	<a href="" onclick="getTaskReward()" data-line="{{$task->line_id}}" data-task="{{$task->task_id}}"
+	<a onclick="javascript:getTaskReward()" data-line="{{$task->line_id}}" data-task="{{$task->task_id}}"
 	data-action="/api/quest/reward" data-template="hanoivip::task-partial" data-update-id="quest-task-{{$task->line_id}}-{{$task->task_id}}">Reward</a>
 @endif
