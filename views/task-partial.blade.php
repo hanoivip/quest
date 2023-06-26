@@ -1,5 +1,10 @@
 <br/>
 <p>{{ $static->detail }}</p>
+<p>Phan thuong:</p>
+@foreach (json_decode($static->rewards) as $reward)
+	<p>{{$reward->type}}</p>
+	<p>{{$reward->count}}</p>
+@endforeach
 @if ($task->status == 1)
 	<p>Da hoan thanh, da nhan thuong</p>
 @elseif (!isset($reward_tasks[$task->line_id * 1000000 + $task->task_id]))

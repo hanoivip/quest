@@ -112,8 +112,7 @@ class Quest extends BaseController
             {
                 $template = $request->input('template');
                 $record = UserQuest::where('line_id', $line)->where('task_id', $tid)->first();
-                $staticTasks = $this->static->getTasks();
-                $static = $staticTasks[$line][$tid];
+                $static = $this->static->getTasks($line, $tid);
                 $canGet = $this->service->canFinished($userId, $record);
                 return view($template, ['task' => $record, 'static' => $static, 'can_reward' => $canGet]);
             }

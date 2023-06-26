@@ -7,6 +7,8 @@ use Hanoivip\Quest\Models\UserQuest;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use Hanoivip\Payment\Facades\BalanceFacade;
+use Hanoivip\Payment\Services\BalanceService;
 
 class QuestService
 {
@@ -183,7 +185,7 @@ class QuestService
         {
             throw new Exception("Quest quest is bogus");
         }
-        $cfg = $cfg[$quest->line_id][$quest->task_id];
+        //$cfg = $cfg[$quest->line_id][$quest->task_id];
         $target = $cfg->target;
         return $quest->target >= $target;
     }
@@ -221,7 +223,8 @@ class QuestService
         $record->save();
         // trigger next?
         $next = $this->static->getTasks($line, $tid + 1);
-        if (!empty($next) && $this->canAccept($userId, $next[$line][$tid+1]))
+        //if (!empty($next) && $this->canAccept($userId, $next[$line][$tid+1]))
+        if (!empty($next) && $this->canAccept($userId, $next))
         {
             //$this->userAcceptTask($userId, $next[$line][$tid+1]);
             // accept
@@ -238,7 +241,23 @@ class QuestService
     
     private function sendReward($userId, $task)
     {
-        Log::debug("Quest send $userId rewards...");
+        //Log::debug("Quest send $userId rewards..." . json_encode($task->rewards));
+        $rewards = json_decode($task->rewards);
+        if (!empty($rewards))
+        {
+            foreach ($rewards as $reward)
+            {
+                switch ($reward->type)
+                {
+                    case 'coin':
+                        $reason = "Quest reward " . $task->line . '-' . $task->id;
+                        BalanceFacade::add($userId, $reward->count, $reason, BalanceService::EXTEND_BALANCE);
+                        break;
+                    default:
+                        Log::error("Quest reward type $reward->type is not supported.");
+                }
+            }
+        }
     }
     
     public function updateTaskProgress($userId, $eventType, $times = 1, $target = null)

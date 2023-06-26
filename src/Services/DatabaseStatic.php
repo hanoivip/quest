@@ -37,20 +37,27 @@ class DatabaseStatic implements IQuestStatic
             $query = $query->where('id', $tid);
         }
         $records = $query->get();
-        // convert to arr
-        $out = [];
         if ($records->isNotEmpty())
         {
-            foreach ($records as $r)
+            if (!empty($line) && !empty($tid))
             {
-                if (!isset($out[$r->line]))
+                return $records->first();
+            }
+            else
+            {
+                // convert to arr
+                $out = [];
+                foreach ($records as $r)
                 {
-                    $out[$r->line] = [];
+                    if (!isset($out[$r->line]))
+                    {
+                        $out[$r->line] = [];
+                    }
+                    $out[$r->line][$r->id] = $r;
                 }
-                $out[$r->line][$r->id] = $r;
+                return $out;
             }
         }
-        return $out;
     }
     
     public function getJobs($jid = null)

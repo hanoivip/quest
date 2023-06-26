@@ -27,7 +27,13 @@ class EventHandler
         }
         $userId = $event->uid;
         $target = null;
-        
+        switch ($eventClass)
+        {
+            case 'User2faUpdated': $target = $event->method;
+                break;
+            case 'UserTopup': $target = $event->type . $event->coin;
+                break;
+        }
         $this->service->updateTaskProgress($userId, $eventClass, 1, $target);
     }
 }
