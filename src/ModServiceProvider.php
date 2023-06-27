@@ -6,6 +6,10 @@ use Illuminate\Support\ServiceProvider;
 use Hanoivip\Quest\Services\ConfigStatic;
 use Hanoivip\Quest\Services\IQuestStatic;
 use Hanoivip\Quest\Services\DatabaseStatic;
+use Hanoivip\Quest\Triggers\LastChangePass;
+use Hanoivip\Quest\Triggers\TaskLineFinishAll;
+use Hanoivip\Quest\Triggers\TaskLineFinishAny;
+use Hanoivip\Quest\Triggers\VipLevel;
 
 class ModServiceProvider extends ServiceProvider
 {
@@ -36,5 +40,10 @@ class ModServiceProvider extends ServiceProvider
         {
             $this->app->bind(IQuestStatic::class, DatabaseStatic::class);
         }
+        // bind triggers
+        $this->app->bind('LastChangePass', LastChangePass::class);
+        $this->app->bind('VipLevel', VipLevel::class);
+        $this->app->bind('TaskLineFinishAny', TaskLineFinishAny::class);
+        $this->app->bind('TaskLineFinishAll', TaskLineFinishAll::class);
     }
 }
