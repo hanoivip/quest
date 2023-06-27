@@ -22,7 +22,7 @@ class EventServiceProvider extends ServiceProvider
         'Hanoivip\Events\Gate\UserTopup' => [
             'Hanoivip\Quest\Services\EventHandler'
         ],
-        'Hanoivip\Events\Gate\UserRecharge' => [
+        'Hanoivip\Events\Game\UserRecharge' => [
             'Hanoivip\Quest\Services\EventHandler'
         ],
         'Hanoivip\Events\Vip\UserVipUpdated' => [
